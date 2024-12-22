@@ -95,7 +95,7 @@ class BaconDevice:
                     import spidev
                     spi = spidev.SpiDev()
                     spi.open(3, 0) # bus 3, device 0
-                    spi.max_speed_hz = 60000000
+                    spi.max_speed_hz = 32000000
                     spi.mode = 0b11
                     spi.bits_per_word = 8
                     spi.lsbfirst = False
@@ -429,21 +429,3 @@ class BaconDevice:
                 v16bit=b"\x00\x00", v8bit=b"\x00", postfunc=echo_all
             ))
         return self.pipeline
-    
-    def AGBCustomWriteCommands(self, commands: list, callback=None) -> bool:
-        pass
-
-    def AGBGPIOEnable(self) -> BaconWritePipeline:
-        if self.power != 3:
-            raise ValueError("Power must be 3.3v")
-        return self.AGBWriteROMSequential(self.GPIO_REG_RE, b"\x01")
-    
-    def AGBGPIOSetDirection(self, direction: int) -> BaconWritePipeline:
-        if self.power != 3:
-            raise ValueError("Power must be 3.3v")
-        return self.AGBWriteROMSequential(self.GPIO_REG_CNT, bytes([direction]))
-    
-    def AGBGPIORead(self) -> int:
-        if self.power != 3:
-            raise ValueError("Power must be 3.3v")
-        return self.AGBReadROM(self.GPIO_REG_DAT, 1)[0]

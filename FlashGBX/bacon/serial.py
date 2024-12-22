@@ -3,7 +3,8 @@
 # Author: ChisBread (github.com/ChisBread)
 import zlib
 import time
-from .bacon import BaconDevice
+from .bacon_sdk import Bacon as BaconDevice
+# from .bacon import BaconDevice
 DEBUG = False
 DEVICE_CMD = {}
 CMD_TO_NAME = {}
@@ -104,14 +105,10 @@ class BaconFakeSerialDevice:
         self.ROM_CACHED = [False]*0x2000000
     
     def cache_rom(self, addr, data):
-        for i in range(len(data)):
-            self.ROM_CACHE[addr+i] = data[i]
-            self.ROM_CACHED[addr+i] = True
-
+        self.ROM_CACHE[addr:addr+len(data)] = data
+        self.ROM_CACHED[addr:addr+len(data)] = [True]*len(data)
     def cache_rom_reset(self, addr=0, size=0x2000000):
-        for i in range(size):
-            self.ROM_CACHED[addr+i] = False
-
+        self.ROM_CACHED[addr:addr+size] = [False]*size
     def read_rom(self, addr, size):
         if self.ROM_CACHED[addr:addr+size].count(False) > 0:
             dprint("[BaconFakeSerialDevice] ReadROM:0x%08X Size:%s" % (addr, size))
@@ -258,6 +255,7 @@ class BaconFakeSerialDevice:
                         # 等待Nms
                         time.sleep(0.001*j)
                         dprint("[BaconFakeSerialDevice] FLASH_PROGRAMMING Retry:%s" % j)
+                        self.cache_rom_reset(addr, buffer_size)
                         ret = ret[:i] + self.read_rom(addr, buffer_size) + ret[i+buffer_size:]
                         j += 1
                     addr += buffer_size
